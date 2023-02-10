@@ -1,7 +1,7 @@
 # Parsing PE executables (PE32, PE32+) in C
 
 ## Goal
-To learn more about PE files.
+To learn more about PE files by building a PE32/PE32+ compatible parser - done.
 
 ## Structure of a PE File
 
