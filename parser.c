@@ -215,16 +215,12 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
     ___IMAGE_NT_HEADERS32 ntHeaders;
 
     fread(&ntHeaders, sizeof(___IMAGE_NT_HEADERS32), 1, peFile);
-
-                            
-
+             
     ___IMAGE_SECTION_HEADER peFileSectionHeaders[ntHeaders.FileHeader.NumberOfSections];
 
-            // 
     	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++) {
   
             int offset = (fileDOSHeader.e_lfanew + sizeof(___IMAGE_NT_HEADERS32) ) + (i * 40);
-
             
             fseek(peFile, offset, SEEK_SET);
             fread(&peFileSectionHeaders[i], 40, 1, peFile);
@@ -239,8 +235,9 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
     // check if there are imports
     if(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0x0) {
 
-                        long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
+        long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
 
+        printf("offset: %X\n", offset);
 
         int importCount = 0;
         // calculate number of entries in import directory table
@@ -265,8 +262,31 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
             fseek(peFile, offset +  (sizeof(__IMAGE_IMPORT_DESCRIPTOR) * i), 0);
             fread(&imports[i], sizeof(__IMAGE_IMPORT_DESCRIPTOR), 1, peFile);
 
-                                    
-            
+            printf("Name RVA: %X\n", imports[i].Name);
+
+            long int offsetToImportName = convertRVAToAbsoluteOffset(imports[i].Name, peFileSectionHeaders,  ntHeaders.FileHeader.NumberOfSections);
+
+            int nameSize = 0;
+
+            while (1) {
+                char tmp; 
+
+                fseek(peFile, offsetToImportName + nameSize, 0);
+                fread(&tmp, sizeof(char), 1, peFile);
+
+                if(tmp == 0x0) {
+                    break;
+                }
+
+                nameSize++;
+            }
+
+            char importName[nameSize];
+
+            fseek(peFile, offsetToImportName, 0);
+            fread(importName, (nameSize * sizeof(char)), 1, peFile);
+
+            printf("Name: %s\n", importName);
 
         }
     
@@ -305,7 +325,7 @@ void parsePE32Plus(FILE * peFile, __DOS_HEADER fileDOSHeader) {
     // check if there are imports
         if(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0x0) {
             long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
-            
+
         } 
 
 
