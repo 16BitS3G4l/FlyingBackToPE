@@ -118,7 +118,7 @@ typedef struct __IMAGE_NT_HEADERS64 {
     DWORD Signature;
     ___IMAGE_FILE_HEADER FileHeader;
     __IMAGE_OPTIONAL_HEADER64 OptionalHeader;
-} ___IMAGE_NT_HEADERS64;
+} __IMAGE_NT_HEADERS64;
 
 typedef struct __IMAGE_NT_HEADERS32 {
     DWORD Signature;
@@ -260,6 +260,8 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
 
             long int offsetToImportName = convertRVAToAbsoluteOffset(imports[i].Name, peFileSectionHeaders,  ntHeaders.FileHeader.NumberOfSections);
 
+            
+
             int nameSize = 0;
 
             while (1) {
@@ -268,19 +270,22 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
                 fseek(peFile, offsetToImportName + nameSize, 0);
                 fread(&tmp, sizeof(char), 1, peFile);
 
-                if(tmp == 0x0) {
+                if(tmp <= 0) {
                     break;
                 }
 
                 nameSize++;
             }
 
-            char importName[nameSize];
+            char importName[nameSize + 1];
+            importName[nameSize] = '\0';
 
             fseek(peFile, offsetToImportName, 0);
             fread(importName, (nameSize * sizeof(char)), 1, peFile);
+            
 
             printf("Name: %s\n", importName);
+
 
         }
     
@@ -297,15 +302,15 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
 void parsePE32Plus(FILE * peFile, __DOS_HEADER fileDOSHeader) {
     
 
-    ___IMAGE_NT_HEADERS64 ntHeaders;
+    __IMAGE_NT_HEADERS64 ntHeaders;
 
-    fread(&ntHeaders, sizeof(___IMAGE_NT_HEADERS64), 1, peFile);
+    fread(&ntHeaders, sizeof(__IMAGE_NT_HEADERS64), 1, peFile);
 
     ___IMAGE_SECTION_HEADER peFileSectionHeaders[ntHeaders.FileHeader.NumberOfSections];
 
     	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++) {
   
-            int offset = (fileDOSHeader.e_lfanew + sizeof(___IMAGE_NT_HEADERS64) ) + (i * 40);
+            int offset = (fileDOSHeader.e_lfanew + sizeof(__IMAGE_NT_HEADERS64) ) + (i * 40);
 
             fseek(peFile, offset, SEEK_SET);
             fread(&peFileSectionHeaders[i], 40, 1, peFile);
@@ -331,6 +336,7 @@ void parseFile(char * filename) {
     FILE * peFile = fopen(filename, "rb");
 
     if(peFile == NULL) {
+        printf("Could not open specified file.\n");
         exit(-1);
     }    
 
