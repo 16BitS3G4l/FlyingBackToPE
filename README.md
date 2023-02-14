@@ -1,4 +1,4 @@
-# Parsing PE executables (PE32, PE32+) in C
+# Command Line PE Parser - parsing executables (PE32, PE32+) in C
 
 ## Goal
 To learn more about PE files by building a PE32/PE32+ compatible parser - done.
