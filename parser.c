@@ -202,12 +202,10 @@ long int convertRVAToAbsoluteOffset(unsigned long RVA, ___IMAGE_SECTION_HEADER p
 
     }
 
-    printf("\nCorrect section: %s\n", peFileSectionHeaders[sectionIndex].Name);
-
+    
     // once we determine the correct section, we need to calculate the offset
     long int offset = ( RVA - peFileSectionHeaders[sectionIndex].VirtualAddress ) + peFileSectionHeaders[sectionIndex].PointerToRawData;
-    printf("Correct offset: %x\n", offset);
-
+    
     return offset;
 
 }
@@ -218,55 +216,30 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
 
     fread(&ntHeaders, sizeof(___IMAGE_NT_HEADERS32), 1, peFile);
 
-    printf("Entry Point: %x\n", ntHeaders.OptionalHeader.AddressOfEntryPoint);
-    printf("Base of Code: %x\n", ntHeaders.OptionalHeader.BaseOfCode);
-    printf("Base of Data: %x\n", ntHeaders.OptionalHeader.BaseOfData);
-    printf("Image Base: %x\n", ntHeaders.OptionalHeader.ImageBase);
-    printf("Section Alignment: %x\n", ntHeaders.OptionalHeader.SectionAlignment);
-    printf("Checksum: %x\n", ntHeaders.OptionalHeader.CheckSum);
-    
+                            
 
     ___IMAGE_SECTION_HEADER peFileSectionHeaders[ntHeaders.FileHeader.NumberOfSections];
 
-    printf("\n======\nStart of PE Header: %x\n=====\n\n", fileDOSHeader.e_lfanew);
-    printf("\n======\nOffset to First Section: %x\n=====\n\n", fileDOSHeader.e_lfanew+sizeof(___IMAGE_NT_HEADERS32));
-    // printf("\n======\nCorrect Offset to First Section: %x\n=====\n\n", fileDOSHeader.e_lfanew+sizeof(___IMAGE_NT_HEADERS32));
-
+            // 
     	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++) {
   
             int offset = (fileDOSHeader.e_lfanew + sizeof(___IMAGE_NT_HEADERS32) ) + (i * 40);
 
-            printf("\nSection Offset: %X", offset);
-
+            
             fseek(peFile, offset, SEEK_SET);
             fread(&peFileSectionHeaders[i], 40, 1, peFile);
 
         }
 
-    printf("Size of DOS Header: %d\n", sizeof(fileDOSHeader));
-    printf("Size of PE Header: %d\n",  sizeof(___IMAGE_NT_HEADERS32) );
-    printf("Size of Section Headers: %d\n", sizeof(peFileSectionHeaders));
-    printf("Size of Section Header: %d\n", sizeof(peFileSectionHeaders[0]));
-    printf("Number of Sections: %d\n", ntHeaders.FileHeader.NumberOfSections);
-
-    printf(" SECTION HEADERS:\n");
-	printf(" ----------------\n\n");
-
+                    
+    	
 	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++) {
-		printf("   * %.8s:\n", peFileSectionHeaders[i].Name);
-		printf("        VirtualAddress: 0x%X\n", peFileSectionHeaders[i].VirtualAddress);
-		printf("        VirtualSize: 0x%X\n", peFileSectionHeaders[i].Misc.VirtualSize);
-		printf("        PointerToRawData: 0x%X\n", peFileSectionHeaders[i].PointerToRawData);
-		printf("        SizeOfRawData: 0x%X\n", peFileSectionHeaders[i].SizeOfRawData);
-		printf("        Characteristics: 0x%X\n\n", peFileSectionHeaders[i].Characteristics);
-	}
+													}
 
     // check if there are imports
     if(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0x0) {
 
-        printf("Address of Import Directory: %x\n", ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-        printf("Size of Import Directory: %x", ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size);
-        long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
+                        long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
 
 
         int importCount = 0;
@@ -274,8 +247,7 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
         while(1) {
               __IMAGE_IMPORT_DESCRIPTOR tmp;
 
-            printf("\nImport offset: %x", offset +  (sizeof(__IMAGE_IMPORT_DESCRIPTOR) * importCount));
-
+            
             fseek(peFile, offset +  (sizeof(__IMAGE_IMPORT_DESCRIPTOR) * importCount), 0);
             fread(&tmp, sizeof(__IMAGE_IMPORT_DESCRIPTOR), 1, peFile);
 
@@ -293,9 +265,7 @@ void parsePE32(FILE * peFile, __DOS_HEADER fileDOSHeader) {
             fseek(peFile, offset +  (sizeof(__IMAGE_IMPORT_DESCRIPTOR) * i), 0);
             fread(&imports[i], sizeof(__IMAGE_IMPORT_DESCRIPTOR), 1, peFile);
 
-            printf("\nImport ILT RVA: %x\n", imports[i].OriginalFirstThunk);
-            printf("\nImport ILT File Offset: %x\n",  convertRVAToAbsoluteOffset(imports[i].OriginalFirstThunk, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections)  );
-            
+                                    
             
 
         }
@@ -317,54 +287,26 @@ void parsePE32Plus(FILE * peFile, __DOS_HEADER fileDOSHeader) {
 
     fread(&ntHeaders, sizeof(___IMAGE_NT_HEADERS64), 1, peFile);
 
-    printf("Entry Point: %x\n", ntHeaders.OptionalHeader.AddressOfEntryPoint);
-    printf("Base of Code: %x\n", ntHeaders.OptionalHeader.BaseOfCode);
-    // printf("Base of Data: %x\n", ntHeaders.OptionalHeader.BaseOfData);
-    printf("Image Base: %x\n", ntHeaders.OptionalHeader.ImageBase);
-
-
-
     ___IMAGE_SECTION_HEADER peFileSectionHeaders[ntHeaders.FileHeader.NumberOfSections];
 
     	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++) {
   
             int offset = (fileDOSHeader.e_lfanew + sizeof(___IMAGE_NT_HEADERS64) ) + (i * 40);
 
-            printf("\nSection Offset: %X", offset);
-
             fseek(peFile, offset, SEEK_SET);
             fread(&peFileSectionHeaders[i], 40, 1, peFile);
 
         }
 
-    printf("Size of DOS Header: %d\n", sizeof(fileDOSHeader));
-    printf("Size of PE Header: %d\n",  sizeof(___IMAGE_NT_HEADERS64) );
-    printf("Size of Section Headers: %d\n", sizeof(peFileSectionHeaders));
-    printf("Size of Section Header: %d\n", sizeof(peFileSectionHeaders[0]));
-    printf("Number of Sections: %d\n", ntHeaders.FileHeader.NumberOfSections);
-
-    printf(" SECTION HEADERS:\n");
-	printf(" ----------------\n\n");
-
+                        	
 	for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++) {
-		printf("   * %.8s:\n", peFileSectionHeaders[i].Name);
-		printf("        VirtualAddress: 0x%X\n", peFileSectionHeaders[i].VirtualAddress);
-		printf("        VirtualSize: 0x%X\n", peFileSectionHeaders[i].Misc.VirtualSize);
-		printf("        PointerToRawData: 0x%X\n", peFileSectionHeaders[i].PointerToRawData);
-		printf("        SizeOfRawData: 0x%X\n", peFileSectionHeaders[i].SizeOfRawData);
-		printf("        Characteristics: 0x%X\n\n", peFileSectionHeaders[i].Characteristics);
-	}
-
+													}
 
     // check if there are imports
-    if(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0x0) {
-
-        printf("Address of Import Directory: %x\n", ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-        printf("Size of Import Directory: %x", ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size);
-        long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
-
-        
-    } 
+        if(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0x0) {
+            long int offset = convertRVAToAbsoluteOffset(ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, peFileSectionHeaders, ntHeaders.FileHeader.NumberOfSections);
+            
+        } 
 
 
 
@@ -385,47 +327,35 @@ void parseFile(char * filename) {
 
     WORD PeFileType = 0;
 
-    // QWORD s = 0;
-    // fseek(peFile, 312, 0);
-    // fread(&s, sizeof(long long ), 1, peFile);
-    // printf("Image Base RAw: %x", s);
-
     fseek(peFile, (fileDOSHeader.e_lfanew + sizeof(DWORD) + sizeof(___IMAGE_FILE_HEADER)), SEEK_SET);
 	fread(&PeFileType, sizeof(WORD), 1, peFile);
 
-    printf("Type: %d (267 for PE32, 523 for PE32+) \n", PeFileType);
-
-
-    printf(" DOS HEADER:\n");
-	printf(" -----------\n\n");
-
-	printf(" Magic: 0x%X\n", fileDOSHeader.e_magic);
 
     if (fileDOSHeader.e_magic != PE_FILE_MAGIC) {
-        printf("Magic failed. Not valid PE FILE.");
+        printf("Did not detect PE magic signature.\n");
         exit(1);
     }
 
-	printf(" File address of new exe header: 0x%X\n", fileDOSHeader.e_lfanew);
-    
     fseek(peFile, fileDOSHeader.e_lfanew, SEEK_SET);
 
     if(PeFileType == PE32_SIGNATURE) {
+
         parsePE32(peFile, fileDOSHeader);
+
     } else if(PeFileType == PE32PLUS_SIGNATURE) {
+        
         parsePE32Plus(peFile, fileDOSHeader);
+    
     } else {
-        printf("sdf!!!");
+        
+        printf("Did not detect valid PE");        
+    
     }
 
     fclose(peFile);
-
 }
 
 int main(int argc, char * argv[]) {
-    
     parseFile(argv[1]);
-
     return 0;
-
 }
