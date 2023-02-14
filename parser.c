@@ -1,10 +1,4 @@
-// goal: disassemble PE32 files to x86-32 assembly code.
-// potential future goal: port it using webassembly so we can leverage it on the web (via github?)
-
-// notes: for some reason, there are an extra 16 bits (2 bytes) added for 64 bit I believe when PE32s don't work unless -16 from the offset calculation.
-// very interesting - there's probably some extra memeory we are allocating in some struct that just doesn't match the size for PE32 vs PE32+
 // #include <stdint.h>
-
 // #include <iostream>
 
 #define IMAGE_DIRECTORY_ENTRY_EXPORT          0   // Export Directory
