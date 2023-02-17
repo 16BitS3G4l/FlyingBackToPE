@@ -28,11 +28,15 @@ typedef struct __DOS_HEADER {
     WORD   e_oemid;
     WORD   e_oeminfo;
     WORD   e_res2[10];
-    LONG   e_lfanew;
+    LONG   e_lfanew; 
 
 } __DOS_HEADER;
 ```
 
+Notes:
+```
+On e_lfanew, this represents the offset to the PE header from the end of the DOS header. In between is the DOS stub.
+```
 
 ### 2) DOS Stub
 This is a MS-DOS program.
