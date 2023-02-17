@@ -3,6 +3,18 @@
 ## Goal
 To learn more about PE files by building a PE32/PE32+ compatible parser - done.
 
+--- 
+
+## Terminology 
+### RVA (Relative Virtual Address)
+The virtual address of an item in the file refers to the location in memory (virtual address space vs physical address space). 
+
+The relative virtual address is the virtual address of the item relative to the base address of the image file / PE.
+
+These concepts are quite important - one example where they come up are resource imports (like DLLs, e.g. VCRUNTIME.dll).
+
+--- 
+
 ## Structure of a PE File
 
 ### 1) DOS Header
